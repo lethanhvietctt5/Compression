@@ -116,6 +116,7 @@ void AdaptiveHuffman::encode(ifstream& in, ofstream& out)
 {
 	// Testing
 	char character;
+	string result;
 	while (in >> character)
 	{
 		int sy = character;
@@ -123,7 +124,8 @@ void AdaptiveHuffman::encode(ifstream& in, ofstream& out)
 		if (node)
 		{
 			string path = getPathtoSymbol(node, root, "");
-			out << path << " ";
+			//out << path << " ";
+			result.append(path);
 			addSymbol(sy);
 		}
 
@@ -131,9 +133,47 @@ void AdaptiveHuffman::encode(ifstream& in, ofstream& out)
 		{
 			string path = getPathtoSymbol(NYT, root, "");
 			bitset<8> bit(sy);
-			out << path << " " << bit << " ";
+			//out << path << " " << bit << " ";
+			result.append(path);
+			result.append(bit.to_string());
 			addSymbol(sy);
 		}
+	}
+
+	bool not_full = false;
+	int count_byte = result.length() / 8;
+	if ((count_byte * 8) < result.length())
+		not_full = true;
+	for (int index = 0; index < count_byte; index++)
+	{
+		string tmp = "00000000";
+		int i = 0;
+		for (int index_2 = 0; index_2 < 8; index_2++)
+		{
+			tmp[i] = result[index * 8 + index_2];
+			i++;
+		}
+
+		bitset<8> bit(tmp);
+		int bit_int = bit.to_ulong();
+		char bit_char = (char)(bit_int);
+		out << bit_char;
+	}
+
+	if (not_full == true)
+	{
+		string tmp = "00000000";
+		int i = 0;
+		for (int index = 0; index < (result.length() - 8 * count_byte); index++)
+		{
+			tmp[8 + 8 * count_byte - result.length() + i] = result[count_byte * 8 + index];
+			i++;
+		}
+
+		bitset<8> bit(tmp);
+		int bit_int = bit.to_ulong();
+		char bit_char = (char)(bit_int);
+		out << bit_char;
 	}
 }
 
