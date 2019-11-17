@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 #include <fstream>
 
 #define MAX_ORDER 512
@@ -47,12 +48,14 @@ class AdaptiveHuffman
 	Node* NYT;
 
 public:
-	AdaptiveHuffman(const AdaptiveHuffman& copy);
+	AdaptiveHuffman();
+	//AdaptiveHuffman(const AdaptiveHuffman& copy);
 	Node* getNodeOfSymbol(int symb, Node* root);
 	int findNodeSameFreq(Node*& crr, Node* root);
 	int swapNode(Node* node1, Node* node2);
 	int updateTree(Node* currentNode);
 	void addSymbol(int symb);
-	void encode(ifstream in, ofstream &out);
-	void decode(ifstream in, ofstream& out);
+	string getPathtoSymbol(Node* crr, Node* root, string path);
+	void encode(ifstream& in, ofstream& out);
+	void decode(ifstream& in, ofstream& out);
 };

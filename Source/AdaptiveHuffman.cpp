@@ -1,15 +1,25 @@
 #include "AdaptiveHuffman.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <bitset>
 
-AdaptiveHuffman::AdaptiveHuffman(const AdaptiveHuffman& copy)
+using namespace std;
+
+AdaptiveHuffman::AdaptiveHuffman()
 {
-	root = new Node(ILLEGAL, 0, 512, nullptr, nullptr, nullptr, true, false);
+	root = new Node(ILLEGAL, 0, MAX_ORDER, nullptr, nullptr, nullptr, true, false);
 	NYT = root;
 }
+
+//AdaptiveHuffman::AdaptiveHuffman(const AdaptiveHuffman& copy)
+//{
+//}
 
 Node* AdaptiveHuffman::getNodeOfSymbol(int symb, Node* root)
 {
 	if (root == nullptr || root->symbol == symb)
-		return nullptr;
+		return root;
 
 	Node* symbolLeft = getNodeOfSymbol(symb, root->left);
 	return symbolLeft == nullptr ? getNodeOfSymbol(symb, root->right) : symbolLeft;
@@ -17,7 +27,7 @@ Node* AdaptiveHuffman::getNodeOfSymbol(int symb, Node* root)
 
 int AdaptiveHuffman::findNodeSameFreq(Node*& crr, Node* root)
 {
-	if (!crr || root == this->root)
+	if (!root || crr == this->root)
 		return 0;
 
 	if (crr->freq == root->freq && crr->parent != root && crr->order < root->order)
@@ -57,7 +67,6 @@ int AdaptiveHuffman::swapNode(Node* node1, Node* node2)
 	return 1;
 }
 
-
 int AdaptiveHuffman::updateTree(Node* currentNode)
 {
 	if (!currentNode)
@@ -81,7 +90,7 @@ void AdaptiveHuffman::addSymbol(int symb)
 	{
 		NYT->isNYT = false;
 		NYT->left = new Node(ILLEGAL, 0, NYT->order - 2, NYT, nullptr, nullptr, true, false);
-		NYT->right = new Node(symb, 1, NYT->order - 1, NYT, nullptr, nullptr, false, true);
+		NYT->right = new Node(symb, 0, NYT->order - 1, NYT, nullptr, nullptr, false, true);
 		nodeSymb = NYT->right;
 		NYT = NYT->left;
 	}
@@ -89,11 +98,46 @@ void AdaptiveHuffman::addSymbol(int symb)
 	updateTree(nodeSymb);
 }
 
-void AdaptiveHuffman::encode(ifstream in, ofstream& out)
+string AdaptiveHuffman::getPathtoSymbol(Node* crr, Node* root, string path)
 {
+	if (crr == root)
+		return path;
+	if (root == nullptr)
+		return "";
+
+	string leftPath = getPathtoSymbol(crr, root->left, path + "0");
+	if (leftPath == "")
+		return getPathtoSymbol(crr, root->right, path + "1");
+	else
+		return leftPath;
 }
 
-void AdaptiveHuffman::decode(ifstream in, ofstream& out)
+void AdaptiveHuffman::encode(ifstream& in, ofstream& out)
+{
+	// Testing
+	char character;
+	while (in >> character)
+	{
+		int sy = character;
+		Node* node = getNodeOfSymbol(sy, root);
+		if (node)
+		{
+			string path = getPathtoSymbol(node, root, "");
+			out << path << " ";
+			addSymbol(sy);
+		}
+
+		else
+		{
+			string path = getPathtoSymbol(NYT, root, "");
+			bitset<8> bit(sy);
+			out << path << " " << bit << " ";
+			addSymbol(sy);
+		}
+	}
+}
+
+void AdaptiveHuffman::decode(ifstream& in, ofstream& out)
 {
 }
 
