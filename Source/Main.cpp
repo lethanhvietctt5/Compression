@@ -2,7 +2,6 @@
 #include <fstream>
 #include <bitset>
 #include <string>
-#include <sstream>
 #include "AdaptiveHuffman.h"
 
 using namespace std;
@@ -13,5 +12,10 @@ int main()
 	ofstream ou("out_file.txt");
 	AdaptiveHuffman encode;
 	encode.encode(in, ou);
+
+	//ifstream i("out_file.txt");
+	//ofstream o("o.txt");
+	//AdaptiveHuffman decode;
+	//decode.decode(i, o);
 	return 1;
 }

@@ -16,7 +16,7 @@ AdaptiveHuffman::AdaptiveHuffman()
 //{
 //}
 
-Node* AdaptiveHuffman::getNodeOfSymbol(int symb, Node* root)
+Node* AdaptiveHuffman::getNodeOfSymbol(char symb, Node* root)
 {
 	if (root == nullptr || root->symbol == symb)
 		return root;
@@ -25,17 +25,22 @@ Node* AdaptiveHuffman::getNodeOfSymbol(int symb, Node* root)
 	return symbolLeft == nullptr ? getNodeOfSymbol(symb, root->right) : symbolLeft;
 }
 
-int AdaptiveHuffman::findNodeSameFreq(Node*& crr, Node* root)
+Node* AdaptiveHuffman::findNodeSameFreq(Node* crr, Node* root)
 {
-	if (!root || crr == this->root)
-		return 0;
+	Node* result = crr;
 
-	if (crr->freq == root->freq && crr->parent != root && crr->order < root->order)
-		crr = root;
-
-	findNodeSameFreq(crr, root->left);
-	findNodeSameFreq(crr, root->right);
-	return 1;
+	if (root->freq > result->freq && !root->isLeaf)
+	{
+		Node* replaceLeft = findNodeSameFreq(result, root->left);
+		if (replaceLeft)
+			result = replaceLeft;
+		Node* replaceRight = findNodeSameFreq(result, root->right);
+		if (replaceRight)
+			result = replaceRight;
+	}
+	else if (root->freq == result->freq && root->order > result->order)
+		result = root;
+	return (result != crr) ? result : nullptr;
 }
 
 int AdaptiveHuffman::swapNode(Node* node1, Node* node2)
@@ -72,7 +77,7 @@ int AdaptiveHuffman::updateTree(Node* currentNode)
 	if (!currentNode)
 		return -1;
 	Node* crr = currentNode;
-	findNodeSameFreq(crr, root);
+	crr = findNodeSameFreq(crr, root);
 
 	if (crr != currentNode)
 		swapNode(crr, currentNode);
@@ -83,7 +88,7 @@ int AdaptiveHuffman::updateTree(Node* currentNode)
 	return 1;
 }
 
-void AdaptiveHuffman::addSymbol(int symb)
+void AdaptiveHuffman::addSymbol(char symb)
 {
 	Node* nodeSymb = getNodeOfSymbol(symb, root);
 	if (!nodeSymb)
@@ -117,26 +122,23 @@ void AdaptiveHuffman::encode(ifstream& in, ofstream& out)
 	// Testing
 	char character;
 	string result;
-	while (in >> character)
+	while (in >> noskipws >> character)
 	{
-		int sy = character;
-		Node* node = getNodeOfSymbol(sy, root);
+		Node* node = getNodeOfSymbol(character, root);
 		if (node)
 		{
 			string path = getPathtoSymbol(node, root, "");
-			//out << path << " ";
 			result.append(path);
-			addSymbol(sy);
+			addSymbol(character);
 		}
 
 		else
 		{
 			string path = getPathtoSymbol(NYT, root, "");
-			bitset<8> bit(sy);
-			//out << path << " " << bit << " ";
+			bitset<8> bit(character);
 			result.append(path);
 			result.append(bit.to_string());
-			addSymbol(sy);
+			addSymbol(character);
 		}
 	}
 
@@ -177,7 +179,77 @@ void AdaptiveHuffman::encode(ifstream& in, ofstream& out)
 	}
 }
 
-void AdaptiveHuffman::decode(ifstream& in, ofstream& out)
+Node* AdaptiveHuffman::getNodebyPath(Node* &from, char path)
 {
+	if (path == '0')
+	{
+		from = from->left;
+		return from;
+	}
+	else if (path == '1')
+	{
+		from = from->right;
+		return from;
+	}
+	else
+		return nullptr;
 }
 
+void AdaptiveHuffman::decode(ifstream& in, ofstream& out)
+{
+	// Status : Doing
+	string bitOfAllSymbols;
+	char symb;
+	while (in.get(symb))
+	{
+		bitset<8> bit(symb);
+		bitOfAllSymbols.append(bit.to_string());
+	}
+
+	cout << "length of bit decode :" << bitOfAllSymbols.length();
+
+	string tmp = "00000000";
+	int index;
+	for (index = 0; index < 8; index++)
+		tmp[index] = bitOfAllSymbols[index];
+
+	bitset<8> bitOfOneSymbol(tmp);
+	char symbol = (char)((int)(bitOfOneSymbol.to_ulong()));
+	out << symbol;
+	addSymbol((int)(symbol));
+	Node* current = root;
+	while (index < bitOfAllSymbols.length())
+	{
+		char path;
+		path = bitOfAllSymbols[index++];
+		Node* newCurr = getNodebyPath(current, path);
+
+		if (newCurr->isLeaf && index<bitOfAllSymbols.length())
+		{
+			/*string temp = "00000000";
+			for (int i = 0; i < 8; i++)
+				temp[i] = bitOfAllSymbols[index++];
+
+			bitset<8> ch(temp);
+			char c = (char)(ch.to_ulong());*/
+			out << (char)(newCurr->symbol);
+			updateTree(newCurr);
+			current = root;
+		}
+		else if (newCurr->isNYT && index < bitOfAllSymbols.length())
+		{
+			string temp = "00000000";
+			for (int i = 0; i < 8; i++)
+				temp[i] = bitOfAllSymbols[index++];
+
+			bitset<8> ch(temp);
+			char c = (char)((int)(ch.to_ulong()));
+			out << c;
+			addSymbol((int)(c));
+			current = root;
+		}
+
+		if (index >= bitOfAllSymbols.length())
+			break;
+	}
+}

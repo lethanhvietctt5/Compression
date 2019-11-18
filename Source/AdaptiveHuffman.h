@@ -11,7 +11,7 @@ using namespace std;
 
 struct Node
 {
-	int symbol;
+	char symbol;
 	int freq;
 	int order;
 
@@ -30,7 +30,7 @@ struct Node
 		parent = left = right = nullptr;
 		isNYT = isLeaf = false;
 	}
-	Node(int symb, int fr, int ord, Node* p, Node* l, Node* r, bool NYT, bool leaf)
+	Node(char symb, int fr, int ord, Node* p, Node* l, Node* r, bool NYT, bool leaf)
 	{
 		symbol = symb;
 		freq = fr;
@@ -50,12 +50,19 @@ class AdaptiveHuffman
 public:
 	AdaptiveHuffman();
 	//AdaptiveHuffman(const AdaptiveHuffman& copy);
-	Node* getNodeOfSymbol(int symb, Node* root);
-	int findNodeSameFreq(Node*& crr, Node* root);
+
+	// Build Adaptive Huffman Tree
+	Node* getNodeOfSymbol(char symb, Node* root);
+	Node* findNodeSameFreq(Node* crr, Node* root);
 	int swapNode(Node* node1, Node* node2);
 	int updateTree(Node* currentNode);
-	void addSymbol(int symb);
+	void addSymbol(char symb);
 	string getPathtoSymbol(Node* crr, Node* root, string path);
+	
+	//Encode 
 	void encode(ifstream& in, ofstream& out);
+
+	//Decode
+	Node* getNodebyPath(Node* &from, char path);
 	void decode(ifstream& in, ofstream& out);
 };
