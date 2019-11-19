@@ -145,10 +145,13 @@ void AdaptiveHuffman::encode(ifstream& in, ofstream& out)
 
 	bool not_full = false;
 	int count_byte = result.length() / 8;
-	int missing = result.length() - count_byte * 8;
+	int missing = 0;
 
 	if ((count_byte * 8) < result.length())
+	{
 		not_full = true;
+		missing = (count_byte + 1) * 8 - result.length();
+	}
 
 	for (int index = 0; index < count_byte; index++)
 	{
@@ -182,7 +185,8 @@ void AdaptiveHuffman::encode(ifstream& in, ofstream& out)
 
 	out << (char)(missing);
 
-	cout << "Length of encode :" << result.length();
+	cout << "Length of encode :" << result.length() << endl;
+	cout << "Missing: " << missing;
 }
 
 Node* AdaptiveHuffman::getNodebyPath(Node* &from, char path)
@@ -207,26 +211,23 @@ void AdaptiveHuffman::decode(ifstream& in, ofstream& out)
 	vector<char> allSymbols;
 	string bitOfAllSymbols;
 	char symb;
-	while (in.get(symb))
+	while (!in.eof())
 	{
 		allSymbols.push_back(symb);
 	}
 
 	int missing = (int)(allSymbols[allSymbols.size() - 1]);
-	for (int index = 0; index < allSymbols.size() - 1; index++)
+	for (int index = 0; index < allSymbols.size(); index++)
 	{
 		bitset<8> bitOfSymbol(allSymbols[index]);
 		bitOfAllSymbols.append(bitOfSymbol.to_string());
 	}
 
-	if (missing != 0)
-	{
-		for (int index = 0; index < missing; index++)
-			bitOfAllSymbols.pop_back();
-	}
+	for (int index = 0; index < missing + 8; index++)
+		bitOfAllSymbols.pop_back();
 
 	cout << "length of bit decode :" << bitOfAllSymbols.length();
-
+	cout << "Missing: " << missing;
 	string tmp = "00000000";
 	int index;
 	for (index = 0; index < 8; index++)
@@ -243,10 +244,10 @@ void AdaptiveHuffman::decode(ifstream& in, ofstream& out)
 		path = bitOfAllSymbols[index++];
 		Node* newCurr = getNodebyPath(current, path);
 
-		if (newCurr->isNYT && index < bitOfAllSymbols.length())
+		if (newCurr->isNYT)
 		{
 			string temp = "00000000";
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; index < bitOfAllSymbols.length() && i < 8; i++)
 				temp[i] = bitOfAllSymbols[index++];
 
 			bitset<8> ch(temp);
@@ -256,7 +257,7 @@ void AdaptiveHuffman::decode(ifstream& in, ofstream& out)
 			current = root;
 		}
 
-		else if (newCurr->symbol != ILLEGAL && index < bitOfAllSymbols.length())
+		else if (newCurr->symbol != ILLEGAL)
 		{
 			out << newCurr->symbol;
 			updateTree(newCurr);
