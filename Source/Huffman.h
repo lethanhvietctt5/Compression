@@ -1,18 +1,10 @@
 #pragma once
-
-#ifndef __STATIC_HUFFMAN__
-#define __STATIC_HUFFMAN__
-
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include <fstream>
 #include <set>
-
-#if __cplusplus < 201103L
-#define nullptr NULL
-#endif
 
 #define INVALID -1
 
@@ -61,4 +53,3 @@ public:
 	void encode();
 	~Huffman() = default;
 };
-#endif
