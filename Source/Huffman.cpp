@@ -1,10 +1,11 @@
-#include "Huffman.h"
+﻿#include "Huffman.h"
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include <fstream>
 #include <utility>
+#include <bitset>
 
 using namespace std;
 
@@ -13,6 +14,7 @@ Huffman::Huffman()
 	root = new node;
 	inputfile = "";
 	outputfile = "";
+	content = "";
 	freq_Symbols.clear();
 	pathOfallSymbols.clear();
 }
@@ -54,7 +56,7 @@ bool Huffman::checkGetAllSymbols()
 
 void Huffman::getSymbolsFromFile()
 {
-	ifstream input(inputfile);
+	ifstream input(inputfile, ios::binary);
 	char symb;
 	while (input >> noskipws >> symb)
 	{
@@ -63,6 +65,7 @@ void Huffman::getSymbolsFromFile()
 		freq_Symbols[symb]++;
 
 		allSymbol.insert(symb);
+		content.push_back(symb);
 	}
 
 	input.close();
@@ -115,10 +118,42 @@ string Huffman::getPathToLeaf(node* crr, char symbol, string path)
 	}
 }
 
+void Huffman::writePathToFile(ofstream& out, string path)
+{
+	int index_string = 0;
+	int count_byte = path.length() / 8;
+	for (int i = 0; i < count_byte; i++)
+	{
+		char tmp;
+		tmp = tmp & 0x00;
+		for (int index = 0; index < 8; index++)
+		{
+			if (path[index_string] == '1')
+				tmp ^= 0x01;
+			if (index != 7)
+				tmp <<= 1;
+			index_string++;
+		}
+		out << tmp;
+	}
+	if ((count_byte * 8) < path.length())
+	{
+		string temp = path.substr(index_string, path.length() - 1);
+		bitset<8> bit(temp);
+		char c = (unsigned char)(bit.to_ulong());
+		out << c;
+	}
+}
+
 void Huffman::encode()
 {
 	// STATE : DOING
+	ifstream input(inputfile, ios::binary);
+	ofstream output(outputfile);
 	getSymbolsFromFile();
+
+	// Gọi hàm lưu cây tại đây
+
 	creatHuffmanTree();
 	for (set<char>::iterator index = allSymbol.begin();index!=allSymbol.end();index++)
 	{
@@ -127,5 +162,37 @@ void Huffman::encode()
 			pathOfallSymbols[*index] = "";
 		}
 		pathOfallSymbols[*index] = getPathToLeaf(root, *index, "");
+	}
+
+	string allPath = "";
+	for (int index = 0; index < content.length(); index++)
+	{
+		string path = pathOfallSymbols[content[index]];
+		allPath.append(path);
+	}
+	writePathToFile(output, allPath);
+}
+
+bool Huffman::checkLeaf(node* crr, char sym)
+{
+	if (crr != nullptr)
+	{
+		if (crr->symbol == sym)
+			return true;
+	}
+	return false;
+}
+
+void Huffman::decode()
+{
+	ifstream input(inputfile, ios::binary);
+	ofstream output(outputfile);
+
+	// đọc file build lại cây
+
+	char symbol;
+	while (input >> noskipws >> symbol)
+	{
+		string path = "";
 	}
 }

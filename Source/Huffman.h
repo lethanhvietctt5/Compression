@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -38,6 +39,7 @@ class Huffman
 	string inputfile;
 	string outputfile;
 	node* root;
+	string content;
 	set<char> allSymbol;
 	unordered_map<char, int> freq_Symbols;
 	unordered_map<char, string> pathOfallSymbols;
@@ -50,6 +52,11 @@ public:
 	void getSymbolsFromFile();
 	void creatHuffmanTree();
 	string getPathToLeaf(node* crr, char symbol, string path);
+	void writePathToFile(ofstream& out, string path);
 	void encode();
+
+	// Decode
+	bool checkLeaf(node* crr, char sym);
+	void decode();
 	~Huffman() = default;
 };
