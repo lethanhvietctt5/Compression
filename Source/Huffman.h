@@ -43,6 +43,7 @@ class Huffman
 	set<char> allSymbol;
 	unordered_map<char, int> freq_Symbols;
 	unordered_map<char, string> pathOfallSymbols;
+	string allPath;
 public:
 	Huffman();
 	Huffman(string in, string out);
@@ -56,7 +57,7 @@ public:
 	void encode();
 
 	// Decode
-	bool checkLeaf(node* crr, char sym);
+	bool checkLeaf(node* crr);
 	void decode();
 	~Huffman() = default;
 };

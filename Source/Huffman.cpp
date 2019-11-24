@@ -15,6 +15,7 @@ Huffman::Huffman()
 	inputfile = "";
 	outputfile = "";
 	content = "";
+	allPath = "";
 	freq_Symbols.clear();
 	pathOfallSymbols.clear();
 }
@@ -136,12 +137,28 @@ void Huffman::writePathToFile(ofstream& out, string path)
 		}
 		out << tmp;
 	}
+
 	if ((count_byte * 8) < path.length())
 	{
+		int missing = (count_byte + 1) * 8 - path.length();
 		string temp = path.substr(index_string, path.length() - 1);
-		bitset<8> bit(temp);
-		char c = (unsigned char)(bit.to_ulong());
-		out << c;
+		for (int index = 0; index < 8 && temp.length() < 8; index++)
+		{
+			temp.push_back('0');
+		}
+
+		char tmp;
+		tmp = tmp & 0x00;
+		for (int index = 0; index < 8; index++)
+		{
+			if (temp[index] == '1')
+				tmp ^= 0x01;
+			if (index != 7)
+				tmp <<= 1;
+		}
+
+		out << tmp;
+		out << (char)(missing);
 	}
 }
 
@@ -164,7 +181,6 @@ void Huffman::encode()
 		pathOfallSymbols[*index] = getPathToLeaf(root, *index, "");
 	}
 
-	string allPath = "";
 	for (int index = 0; index < content.length(); index++)
 	{
 		string path = pathOfallSymbols[content[index]];
@@ -173,11 +189,11 @@ void Huffman::encode()
 	writePathToFile(output, allPath);
 }
 
-bool Huffman::checkLeaf(node* crr, char sym)
+bool Huffman::checkLeaf(node* crr)
 {
 	if (crr != nullptr)
 	{
-		if (crr->symbol == sym)
+		if (crr->left == nullptr && crr->right == nullptr)
 			return true;
 	}
 	return false;
@@ -191,8 +207,61 @@ void Huffman::decode()
 	// đọc file build lại cây
 
 	char symbol;
+	symbol &= 0x00;
 	while (input >> noskipws >> symbol)
 	{
-		string path = "";
+		for (int index = 0; index < 8; index++)
+		{
+			if ((symbol & 0x80) == 0x80)
+				allPath.push_back('1');
+			else
+				allPath.push_back('0');
+			symbol <<= 1;
+		}
 	}
+
+	string tmp = allPath.substr(allPath.length() - 8, allPath.length() - 1);
+
+	char t;
+	t = t & 0x00;
+	for (int index = 0; index < 8; index++)
+	{
+		if (tmp[index] == '1')
+			t ^= 0x01;
+		if (index != 7)
+			t <<= 1;
+	}
+
+	int missing = (int)(t);
+
+	for (int i = 0; i < missing + 8; i++)
+		allPath.pop_back();
+
+	node* temp = root;
+	for (int index = 0; index < allPath.length(); index++)
+	{
+		if (allPath[index] == '0')
+		{
+			if (checkLeaf(temp->left))
+			{
+				output << temp->left->symbol;
+				temp = root;
+			}
+			else
+				temp = temp->left;
+		}
+		else if (allPath[index] == '1')
+		{
+			if (checkLeaf(temp->right))
+			{
+				output << temp->right->symbol;
+				temp = root;
+			}
+			else
+				temp = temp->right;
+		}
+	}
+
+	input.close();
+	output.close();
 }
