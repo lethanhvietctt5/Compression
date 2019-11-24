@@ -13,5 +13,8 @@ int main()
 {
 	Huffman huff("input.txt", "output.txt");
 	huff.encode();
+
+	Huffman h("output.txt", "decode.txt");
+	h.decode();
 	return 1;
 }

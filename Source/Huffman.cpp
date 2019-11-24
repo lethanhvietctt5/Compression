@@ -163,14 +163,9 @@ void Huffman::writePathToFile(ofstream& out, string path)
 	}
 }
 
-bool isLeaf(node* root)
+bool Huffman::restoreTree(node* root, string& result)
 {
-	return (root->left == nullptr && root->right == nullptr);
-}
-
-bool restoreTree(node* root, string& result)
-{
-	if (isLeaf(root)) {
+	if (checkLeaf(root)) {
 		result += '1';
 		bitset<8> temp(root->symbol);
 		result += temp.to_string();
@@ -186,7 +181,7 @@ bool restoreTree(node* root, string& result)
 	}
 }
 
-bool rebuildTree(node*& root, string& code)
+bool Huffman::rebuildTree(node*& root, string& code)
 {
 	while (code.size() != 0)
 	{
@@ -228,7 +223,10 @@ void Huffman::encode()
 		buffer++;
 	}
 	nChar = Hufftree.size() / 8;
-	output << nChar << ' ' << buffer << ' ';
+	output << nChar;
+	output << ' ';
+	output << buffer;
+	output << ' ';
 	while (Hufftree.size() != 0)
 	{
 		bitset<8> character(Hufftree.substr(0, 8));
@@ -250,7 +248,7 @@ void Huffman::encode()
 		string path = pathOfallSymbols[content[index]];
 		allPath.append(path);
 	}
-	//writePathToFile(output, allPath);
+	writePathToFile(output, allPath);
 }
 
 void Huffman::redefineTree(node* newTree)
@@ -275,10 +273,13 @@ void Huffman::decode()
 	string treecode = "";
 	int nChar, nbuffer;
 	char ctree;
-	input >> nChar >> nbuffer;
+	input >> nChar;
 	input >> noskipws >> ctree;
-	while (input >> noskipws >> ctree)
+	input>> nbuffer;
+	input >> noskipws >> ctree;
+	for (int i = 0; i < nChar; i++)
 	{
+		input >> noskipws >> ctree;
 		bitset<8> character(ctree);
 		treecode += character.to_string();
 	}

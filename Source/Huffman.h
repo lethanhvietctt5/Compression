@@ -58,6 +58,8 @@ public:
 
 	// Decode
 	void redefineTree(node* newTree);
+	bool restoreTree(node* root, string& result);
+	bool rebuildTree(node*& root, string& code);
 	bool checkLeaf(node* crr);
 	void decode();
 	~Huffman() = default;
