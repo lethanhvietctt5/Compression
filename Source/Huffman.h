@@ -57,6 +57,7 @@ public:
 	void encode();
 
 	// Decode
+	void redefineTree(node* newTree);
 	bool checkLeaf(node* crr);
 	void decode();
 	~Huffman() = default;

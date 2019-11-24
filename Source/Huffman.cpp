@@ -138,9 +138,10 @@ void Huffman::writePathToFile(ofstream& out, string path)
 		out << tmp;
 	}
 
+	int missing = (count_byte + 1) * 8 - path.length();
+
 	if ((count_byte * 8) < path.length())
 	{
-		int missing = (count_byte + 1) * 8 - path.length();
 		string temp = path.substr(index_string, path.length() - 1);
 		for (int index = 0; index < 8 && temp.length() < 8; index++)
 		{
@@ -162,16 +163,79 @@ void Huffman::writePathToFile(ofstream& out, string path)
 	}
 }
 
+bool isLeaf(node* root)
+{
+	return (root->left == nullptr && root->right == nullptr);
+}
+
+bool restoreTree(node* root, string& result)
+{
+	if (isLeaf(root)) {
+		result += '1';
+		bitset<8> temp(root->symbol);
+		result += temp.to_string();
+		return true;
+	}
+	else
+	{
+		result += '0';
+		if (restoreTree(root->left, result))
+		{
+			restoreTree(root->right, result);
+		}
+	}
+}
+
+bool rebuildTree(node*& root, string& code)
+{
+	while (code.size() != 0)
+	{
+		if (code[0] == '1')
+		{
+			bitset<8> symb(code.substr(1, 8));
+			root = new node((char)((int)(symb.to_ulong())), NULL, nullptr, nullptr);
+			if (code.size() > 8)
+				code = code.substr(9, code.size() - 9);
+			else code = "";
+			return true;
+		}
+		else
+		{
+			root = new node(-1, NULL, nullptr, nullptr);
+			code = code.substr(1, code.size() - 1);
+			rebuildTree(root->left, code);
+			rebuildTree(root->right, code);
+			return true;
+		}
+	}
+	return true;
+}
+
 void Huffman::encode()
 {
 	// STATE : DOING
 	ifstream input(inputfile, ios::binary);
 	ofstream output(outputfile);
 	getSymbolsFromFile();
-
-	// Gọi hàm lưu cây tại đây
-
 	creatHuffmanTree();
+
+	int nChar, buffer = 0;
+	string Hufftree = "";
+	restoreTree(root, Hufftree);
+	while (Hufftree.size() % 8)
+	{
+		Hufftree += '0';
+		buffer++;
+	}
+	nChar = Hufftree.size() / 8;
+	output << nChar << ' ' << buffer << ' ';
+	while (Hufftree.size() != 0)
+	{
+		bitset<8> character(Hufftree.substr(0, 8));
+		output << (char)((int)(character.to_ulong()));
+		Hufftree = Hufftree.substr(8, Hufftree.size() - 8);
+	}
+
 	for (set<char>::iterator index = allSymbol.begin();index!=allSymbol.end();index++)
 	{
 		if (pathOfallSymbols.count(*index) == 0)
@@ -186,7 +250,12 @@ void Huffman::encode()
 		string path = pathOfallSymbols[content[index]];
 		allPath.append(path);
 	}
-	writePathToFile(output, allPath);
+	//writePathToFile(output, allPath);
+}
+
+void Huffman::redefineTree(node* newTree)
+{
+	root = newTree;
 }
 
 bool Huffman::checkLeaf(node* crr)
@@ -203,8 +272,20 @@ void Huffman::decode()
 {
 	ifstream input(inputfile, ios::binary);
 	ofstream output(outputfile);
-
-	// đọc file build lại cây
+	string treecode = "";
+	int nChar, nbuffer;
+	char ctree;
+	input >> nChar >> nbuffer;
+	input >> noskipws >> ctree;
+	while (input >> noskipws >> ctree)
+	{
+		bitset<8> character(ctree);
+		treecode += character.to_string();
+	}
+	treecode = treecode.substr(0, treecode.size() - nbuffer);
+	node* newTree = new node;
+	rebuildTree(newTree, treecode);
+	redefineTree(newTree);
 
 	char symbol;
 	symbol &= 0x00;
