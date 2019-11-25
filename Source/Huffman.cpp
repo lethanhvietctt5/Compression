@@ -57,19 +57,16 @@ bool Huffman::checkGetAllSymbols()
 
 void Huffman::getSymbolsFromFile(ofstream& out)
 {
-	ifstream input(inputfile, ios::binary);
+	ifstream input(inputfile);
 	char symb;
 	while (input.get(symb))
 	{
-		if (symb != '\r')
-		{
-			if (freq_Symbols.count(symb) == 0)
-				freq_Symbols[symb] = 0;
-			freq_Symbols[symb]++;
+		if (freq_Symbols.count(symb) == 0)
+			freq_Symbols[symb] = 0;
+		freq_Symbols[symb]++;
 
-			allSymbol.insert(symb);
-			content.push_back(symb);
-		}
+		allSymbol.insert(symb);
+		content.push_back(symb);
 	}
 
 	int size = freq_Symbols.size();
@@ -271,7 +268,7 @@ bool Huffman::checkLeaf(node* crr)
 void Huffman::decode()
 {
 	ifstream input(inputfile, ios::binary);
-	ofstream output(outputfile, ios::binary);
+	ofstream output(outputfile);
 	int count_symbols;
 	char sym;
 	input >> noskipws >> count_symbols;
