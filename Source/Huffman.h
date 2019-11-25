@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <fstream>
 #include <set>
@@ -41,8 +41,8 @@ class Huffman
 	node* root;
 	string content;
 	set<char> allSymbol;
-	unordered_map<char, int> freq_Symbols;
-	unordered_map<char, string> pathOfallSymbols;
+	map<char, int> freq_Symbols;
+	map<char, string> pathOfallSymbols;
 	string allPath;
 public:
 	Huffman();
@@ -50,17 +50,17 @@ public:
 	// Encode
 	void sortSymbol(vector<node*> &tree);
 	bool checkGetAllSymbols();
-	void getSymbolsFromFile();
+	void getSymbolsFromFile(ofstream& out);
 	void creatHuffmanTree();
 	string getPathToLeaf(node* crr, char symbol, string path);
 	void writePathToFile(ofstream& out, string path);
 	void encode();
 
 	// Decode
-	void redefineTree(node* newTree);
-	bool restoreTree(node* root, string& result);
-	bool rebuildTree(node*& root, string& code);
 	bool checkLeaf(node* crr);
+	void redefineTree(node* newTree);
 	void decode();
-	~Huffman() = default;
+
+	void deleteTree(node* root);
+	~Huffman();
 };
