@@ -5,7 +5,6 @@
 #include <vector>
 #include <fstream>
 #include <utility>
-#include <bitset>
 
 using namespace std;
 
@@ -310,7 +309,7 @@ void Huffman::decode()
 		}
 	}
 
-	string tmp = allPath.substr(allPath.length() - 8, allPath.length() - 1);
+	string tmp = allPath.substr(allPath.length() - 8, 8);
 
 	char t;
 	t = t & 0x00;
