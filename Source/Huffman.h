@@ -50,7 +50,7 @@ public:
 	// Encode
 	void sortSymbol(vector<node*> &tree);
 	bool checkGetAllSymbols();
-	void getSymbolsFromFile(ofstream& out);
+	void getSymbolsFromFile();
 	void creatHuffmanTree();
 	string getPathToLeaf(node* crr, char symbol, string path);
 	void writePathToFile(ofstream& out, string path);

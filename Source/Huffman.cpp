@@ -55,11 +55,11 @@ bool Huffman::checkGetAllSymbols()
 	return false;
 }
 
-void Huffman::getSymbolsFromFile(ofstream& out)
+void Huffman::getSymbolsFromFile()
 {
-	ifstream input(inputfile);
+	ifstream input(inputfile, ios::binary);
 	char symb;
-	while (input.get(symb))
+	while (input >> noskipws >> symb)
 	{
 		if (freq_Symbols.count(symb) == 0)
 			freq_Symbols[symb] = 0;
@@ -67,18 +67,6 @@ void Huffman::getSymbolsFromFile(ofstream& out)
 
 		allSymbol.insert(symb);
 		content.push_back(symb);
-	}
-
-	int size = freq_Symbols.size();
-	out << size;
-	out << " ";
-
-	for (map<char, int>::iterator index = freq_Symbols.begin(); index != freq_Symbols.end(); index++)
-	{
-		out << index->first;
-		out << " ";
-		out << index->second;
-		out << " ";
 	}
 
 	input.close();
@@ -230,8 +218,28 @@ void Huffman::encode()
 	// STATE : DOING
 	ifstream input(inputfile, ios::binary);
 	ofstream output(outputfile, ios::binary);
-	getSymbolsFromFile(output);
+	getSymbolsFromFile();
 	creatHuffmanTree();
+
+	int nChar, buffer = 0;
+	string Hufftree = "";
+	restoreTree(root, Hufftree);
+	while (Hufftree.size() % 8)
+	{
+		Hufftree += '0';
+		buffer++;
+	}
+	nChar = Hufftree.size() / 8;
+	output << nChar;
+	output << ' ';
+	output << buffer;
+	output << ' ';
+	while (Hufftree.size() != 0)
+	{
+		bitset<8> character(Hufftree.substr(0, 8));
+		output << (char)((int)(character.to_ulong()));
+		Hufftree = Hufftree.substr(8, Hufftree.size() - 8);
+	}
 
 	for (set<char>::iterator index = allSymbol.begin();index!=allSymbol.end();index++)
 	{
@@ -268,23 +276,26 @@ bool Huffman::checkLeaf(node* crr)
 void Huffman::decode()
 {
 	ifstream input(inputfile, ios::binary);
-	ofstream output(outputfile);
-	int count_symbols;
-	char sym;
-	input >> noskipws >> count_symbols;
-	input >> noskipws >> sym;
-	int index_char = 0;
-	while(index_char < count_symbols && input.get(sym))
+	ofstream output(outputfile, ios::binary);
+
+	string treecode = "";
+	int nChar, nbuffer;
+	char ctree;
+	input >> nChar;
+	input >> noskipws >> ctree;
+	input >> nbuffer;
+	input >> noskipws >> ctree;
+	for (int i = 0; i < nChar; i++)
 	{
-		char temp;
-		input >> noskipws >> temp;
-		int freq;
-		input >> noskipws >> freq;
-		input >> noskipws >> temp;
-		freq_Symbols.insert({ sym,freq });
-		index_char++;
+		input >> noskipws >> ctree;
+		bitset<8> character(ctree);
+		treecode += character.to_string();
 	}
-	creatHuffmanTree();
+	treecode = treecode.substr(0, treecode.size() - nbuffer);
+	node* newTree = new node;
+	rebuildTree(newTree, treecode);
+	redefineTree(newTree);
+
 	char symbol;
 	symbol &= 0x00;
 	while (input.get(symbol))
