@@ -202,7 +202,7 @@ bool rebuildTree(node*& root, string& code)
 		}
 		else
 		{
-			root = new node(-1, NULL, nullptr, nullptr);
+			root = new node(INVALID, NULL, nullptr, nullptr);
 			code = code.substr(1, code.size() - 1);
 			rebuildTree(root->left, code);
 			rebuildTree(root->right, code);

@@ -35,14 +35,6 @@ void folder::ListFileInFolder(std::vector<std::string>& list_file, std::string p
 void Folder::open()
 {
 	ListFileInFolder(filename, name, name.substr(0, name.length()-1));
-	/*for (int i = 0; i < filename.size(); i++)
-	{
-		for (int k = 0; k < filename[i].size(); k++)
-		{
-			if (filename[i][k] == '\\')
-				filename[i][k] = '/';
-		}
-	}*/
 }
 
 void folder::sortSymbol(vector<node*>& tree)
@@ -219,7 +211,7 @@ bool folder::rebuildTree(node*& root, string& code)
 		}
 		else
 		{
-			root = new node(-1, NULL, nullptr, nullptr);
+			root = new node(INVALID, NULL, nullptr, nullptr);
 			code = code.substr(1, code.size() - 1);
 			rebuildTree(root->left, code);
 			rebuildTree(root->right, code);
