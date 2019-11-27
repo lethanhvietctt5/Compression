@@ -11,10 +11,10 @@ using namespace std;
 
 int main()
 {
-	Huffman huff("input.txt", "output.txt");
+	Huffman huff("static_HUFF.exe", "output.txt");
 	huff.encode();
 
-	Huffman h("output.txt", "decode.txt");
+	Huffman h("output.txt", "decode.exe");
 	h.decode();
 	return 1;
 }

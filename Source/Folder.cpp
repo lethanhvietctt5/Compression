@@ -53,16 +53,6 @@ void folder::sortSymbol(vector<node*>& tree)
 	}
 }
 
-bool folder::checkGetAllSymbols(map<char, int> freq_Symbols)
-{
-	for (map<char, int>::iterator index = freq_Symbols.begin(); index != freq_Symbols.end(); index++)
-	{
-		if (index->first != INVALID)
-			return true;
-	}
-	return false;
-}
-
 void folder::getSymbolsFromFile(string inputfile, map<char, int> &freq_Symbols, set<char> &allSymbol, string &content)
 {
 	ifstream input(inputfile, ios::binary);
@@ -83,10 +73,10 @@ void folder::getSymbolsFromFile(string inputfile, map<char, int> &freq_Symbols, 
 void folder::creatHuffmanTree(node* &root, map<char, int> &freq_Symbols)
 {
 	vector<node*> tree;
-	while (checkGetAllSymbols(freq_Symbols))
+	while (!freq_Symbols.empty())
 	{
 		pair<char, int> Node = (*freq_Symbols.begin());
-		node* newNode(new node(Node.first, Node.second, nullptr, nullptr));
+		node* newNode(new node(Node.first, Node.second, nullptr, nullptr,true));
 		freq_Symbols.erase(freq_Symbols.begin());
 		tree.push_back(newNode);
 	}
@@ -101,7 +91,7 @@ void folder::creatHuffmanTree(node* &root, map<char, int> &freq_Symbols)
 		node* second = tree.front();
 		tree.erase(tree.begin());
 
-		root = new node(INVALID, first->freq + second->freq, first, second);
+		root = new node(INVALID, first->freq + second->freq, first, second,false);
 
 		tree.push_back(root);
 		sortSymbol(tree);
@@ -203,7 +193,7 @@ bool folder::rebuildTree(node*& root, string& code)
 		if (code[0] == '1')
 		{
 			bitset<8> symb(code.substr(1, 8));
-			root = new node((char)((int)(symb.to_ulong())), NULL, nullptr, nullptr);
+			root = new node((char)((int)(symb.to_ulong())), NULL, nullptr, nullptr,true);
 			if (code.size() > 8)
 				code = code.substr(9, code.size() - 9);
 			else code = "";
@@ -211,7 +201,7 @@ bool folder::rebuildTree(node*& root, string& code)
 		}
 		else
 		{
-			root = new node(INVALID, NULL, nullptr, nullptr);
+			root = new node(INVALID, NULL, nullptr, nullptr,false);
 			code = code.substr(1, code.size() - 1);
 			rebuildTree(root->left, code);
 			rebuildTree(root->right, code);

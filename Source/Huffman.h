@@ -8,7 +8,7 @@
 #include <fstream>
 #include <set>
 
-#define INVALID -1
+#define INVALID -1000
 
 using namespace std;
 
@@ -18,6 +18,7 @@ struct node
 	int freq;
 	node* left;
 	node* right;
+	bool isLeaf;
 
 	node()
 	{
@@ -25,14 +26,16 @@ struct node
 		freq = 0;
 		left = nullptr;
 		right = nullptr;
+		isLeaf = true;
 	}
 
-	node(char s, int f, node* l, node* r)
+	node(char s, int f, node* l, node* r,bool il)
 	{
 		symbol = s;
 		freq = f;
 		left = l;
 		right = r;
+		isLeaf = il;
 	}
 };
 class Huffman
@@ -50,7 +53,6 @@ public:
 	Huffman(string in, string out);
 	// Encode
 	void sortSymbol(vector<node*> &tree);
-	bool checkGetAllSymbols();
 	void getSymbolsFromFile();
 	void creatHuffmanTree();
 	string getPathToLeaf(node* crr, char symbol, string path);
@@ -58,10 +60,8 @@ public:
 	void encode();
 
 	// Decode
-	bool checkLeaf(node* crr);
 	void redefineTree(node* newTree);
 	void decode();
-
 	void deleteTree(node* root);
 	~Huffman();
 };

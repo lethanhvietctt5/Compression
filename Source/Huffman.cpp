@@ -44,16 +44,6 @@ void Huffman::sortSymbol(vector<node*> &tree)
 	}
 }
 
-bool Huffman::checkGetAllSymbols()
-{
-	for (map<char, int>::iterator index = freq_Symbols.begin(); index != freq_Symbols.end(); index++)
-	{
-		if (index->first != INVALID)
-			return true;
-	}
-	return false;
-}
-
 void Huffman::getSymbolsFromFile()
 {
 	ifstream input(inputfile, ios::binary);
@@ -74,10 +64,10 @@ void Huffman::getSymbolsFromFile()
 void Huffman::creatHuffmanTree()
 {
 	vector<node*> tree;
-	while (checkGetAllSymbols())
+	while (!freq_Symbols.empty())
 	{
 		pair<char, int> Node = (*freq_Symbols.begin());
-		node* newNode(new node(Node.first, Node.second, nullptr, nullptr));
+		node* newNode(new node(Node.first, Node.second, nullptr, nullptr,true)); // fix
 		freq_Symbols.erase(freq_Symbols.begin());
 		tree.push_back(newNode);
 	}
@@ -92,7 +82,7 @@ void Huffman::creatHuffmanTree()
 		node* second = tree.front();
 		tree.erase(tree.begin());
 
-		root = new node(INVALID, first->freq + second->freq, first, second);
+		root = new node(INVALID, first->freq + second->freq, first, second,false);  //fix
 
 		tree.push_back(root);
 		sortSymbol(tree);
@@ -164,14 +154,10 @@ void Huffman::writePathToFile(ofstream& out, string path)
 	out << (char)(missing);
 }
 
-bool isLeaf(node* root)
-{
-	return (root->left == nullptr && root->right == nullptr);
-}
-
 bool restoreTree(node* root, string& result)
 {
-	if (isLeaf(root)) {
+	if (root->isLeaf)
+	{
 		result += '1';
 		bitset<8> temp(root->symbol);
 		result += temp.to_string();
@@ -194,7 +180,7 @@ bool rebuildTree(node*& root, string& code)
 		if (code[0] == '1')
 		{
 			bitset<8> symb(code.substr(1, 8));
-			root = new node((char)((int)(symb.to_ulong())), NULL, nullptr, nullptr);
+			root = new node((char)((int)(symb.to_ulong())), 0, nullptr, nullptr,true);	//fix
 			if (code.size() > 8)
 				code = code.substr(9, code.size() - 9);
 			else code = "";
@@ -202,7 +188,7 @@ bool rebuildTree(node*& root, string& code)
 		}
 		else
 		{
-			root = new node(INVALID, NULL, nullptr, nullptr);
+			root = new node(INVALID, 0, nullptr, nullptr,false);	//fix
 			code = code.substr(1, code.size() - 1);
 			rebuildTree(root->left, code);
 			rebuildTree(root->right, code);
@@ -260,16 +246,6 @@ void Huffman::encode()
 void Huffman::redefineTree(node* newTree)
 {
 	root = newTree;
-}
-
-bool Huffman::checkLeaf(node* crr)
-{
-	if (crr != nullptr)
-	{
-		if (crr->left == nullptr && crr->right == nullptr)
-			return true;
-	}
-	return false;
 }
 
 void Huffman::decode()
@@ -331,7 +307,7 @@ void Huffman::decode()
 	{
 		if (allPath[index] == '0')
 		{
-			if (checkLeaf(temp->left))
+			if (temp->left->isLeaf)
 			{
 				output << temp->left->symbol;
 				temp = root;
@@ -341,7 +317,7 @@ void Huffman::decode()
 		}
 		else if (allPath[index] == '1')
 		{
-			if (checkLeaf(temp->right))
+			if (temp->right->isLeaf)
 			{
 				output << temp->right->symbol;
 				temp = root;
