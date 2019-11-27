@@ -8,7 +8,7 @@
 #include <fstream>
 #include <set>
 
-#define INVALID -1000
+#define INVALID 0
 
 using namespace std;
 

@@ -95,7 +95,7 @@ string Huffman::getPathToLeaf(node* crr, char symbol, string path)
 		return "";
 	else
 	{
-		if (crr->symbol == symbol)
+		if (crr->symbol == symbol && crr->isLeaf)
 			return path;
 		else
 		{
