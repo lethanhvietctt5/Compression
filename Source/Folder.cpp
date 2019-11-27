@@ -35,14 +35,14 @@ void folder::ListFileInFolder(std::vector<std::string>& list_file, std::string p
 void Folder::open()
 {
 	ListFileInFolder(filename, name, name.substr(0, name.length()-1));
-	for (int i = 0; i < filename.size(); i++)
+	/*for (int i = 0; i < filename.size(); i++)
 	{
 		for (int k = 0; k < filename[i].size(); k++)
 		{
 			if (filename[i][k] == '\\')
 				filename[i][k] = '/';
 		}
-	}
+	}*/
 }
 
 void folder::sortSymbol(vector<node*>& tree)
@@ -73,7 +73,6 @@ bool folder::checkGetAllSymbols(map<char, int> freq_Symbols)
 
 void folder::getSymbolsFromFile(string inputfile, map<char, int> &freq_Symbols, set<char> &allSymbol, string &content)
 {
-	//inputfile = "test/alo/input.txt";
 	ifstream input(inputfile, ios::binary);
 	char symb;
 	while (input >> noskipws >> symb)
@@ -307,12 +306,18 @@ void Folder::decode(string inputfile, string outfolder)
 		{
 			input >> filename[i][k];
 		}
-		filename[i] = outfolder + '/' + filename[i];
-		ofstream output(filename[i], ios::binary); // loi khong tu tao folder neu khong co folder
+		filename[i] = outfolder + '\\' + filename[i];
+		ofstream output(filename[i], ios::binary); 
+		if (output.fail())
+		{
+			string cmd = "mkdir " + filename[i].substr(0, filename[i].rfind('\\'));
+			system(cmd.c_str());
+			output.open(filename[i], ios::binary);
+		}
 		input >> noskipws >> symb;
 		string treecode = "", allPath = "";
 		int nByte, nChar, nbuffer;
-		char ctree;
+		char ctree;	
 		input >> nChar;
 		input >> noskipws >> ctree;
 		input >> nbuffer;
