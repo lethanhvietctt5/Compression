@@ -106,7 +106,7 @@ void Huffman::writePathToFile(ofstream& out, string path)
 {
 	int index_string = 0;
 	int count_byte = path.length() / 8;
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < count_byte; i++)
 	{
 		char tmp;
 		tmp = tmp & 0x00;
