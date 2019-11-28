@@ -1,12 +1,8 @@
 #pragma once
 
-#include <bitset>
 #include <iostream>
 #include <string>
-#include <map>
-#include <vector>
 #include <fstream>
-#include <set>
 
 #define INVALID 0
 
@@ -44,9 +40,8 @@ class Huffman
 	string outputfile;
 	node* root;
 	string content;
-	set<char> allSymbol;
-	map<char, int> freq_Symbols;
-	map<char, string> pathOfallSymbols;
+	int freq_Symbols[256] = { 0 };
+	string pathOfallSymbols[256] = { "" };
 	string allPath;
 public:
 	Huffman();
@@ -63,5 +58,6 @@ public:
 	void redefineTree(node* newTree);
 	void decode();
 	void deleteTree(node* root);
+	void clear();
 	~Huffman();
 };

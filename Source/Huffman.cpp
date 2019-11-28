@@ -1,7 +1,7 @@
 ﻿#include "Huffman.h"
 #include <iostream>
 #include <string>
-#include <map>
+#include <bitset>
 #include <vector>
 #include <fstream>
 #include <utility>
@@ -15,8 +15,6 @@ Huffman::Huffman()
 	outputfile = "";
 	content = "";
 	allPath = "";
-	freq_Symbols.clear();
-	pathOfallSymbols.clear();
 }
 
 Huffman::Huffman(string in, string out)
@@ -24,8 +22,6 @@ Huffman::Huffman(string in, string out)
 	root = new node;
 	inputfile = in;
 	outputfile = out;
-	freq_Symbols.clear();
-	pathOfallSymbols.clear();
 }
 
 void Huffman::sortSymbol(vector<node*> &tree)
@@ -50,26 +46,24 @@ void Huffman::getSymbolsFromFile()
 	char symb;
 	while (input >> noskipws >> symb)
 	{
-		if (freq_Symbols.count(symb) == 0)
-			freq_Symbols[symb] = 0;
-		freq_Symbols[symb]++;
-
-		allSymbol.insert(symb);
+		freq_Symbols[(int)symb + 127]++;
 		content.push_back(symb);
 	}
-
 	input.close();
 }
 
 void Huffman::creatHuffmanTree()
 {
 	vector<node*> tree;
-	while (!freq_Symbols.empty())
+	for (int index = 0; index < 256; index++)
 	{
-		pair<char, int> Node = (*freq_Symbols.begin());
-		node* newNode(new node(Node.first, Node.second, nullptr, nullptr,true)); // fix
-		freq_Symbols.erase(freq_Symbols.begin());
-		tree.push_back(newNode);
+		if (freq_Symbols[index] != 0)
+		{
+			char s = (char)(index - 127);
+			int frq = freq_Symbols[index];
+			node* newNode(new node(s, frq, nullptr, nullptr, true));
+			tree.push_back(newNode);
+		}
 	}
 
 	sortSymbol(tree);
@@ -82,7 +76,7 @@ void Huffman::creatHuffmanTree()
 		node* second = tree.front();
 		tree.erase(tree.begin());
 
-		root = new node(INVALID, first->freq + second->freq, first, second,false);  //fix
+		root = new node(INVALID, first->freq + second->freq, first, second,false);
 
 		tree.push_back(root);
 		sortSymbol(tree);
@@ -112,7 +106,7 @@ void Huffman::writePathToFile(ofstream& out, string path)
 {
 	int index_string = 0;
 	int count_byte = path.length() / 8;
-	for (int i = 0; i < count_byte; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		char tmp;
 		tmp = tmp & 0x00;
@@ -150,7 +144,6 @@ void Huffman::writePathToFile(ofstream& out, string path)
 
 		out << tmp;
 	}
-
 	out << (char)(missing);
 }
 
@@ -180,7 +173,7 @@ bool rebuildTree(node*& root, string& code)
 		if (code[0] == '1')
 		{
 			bitset<8> symb(code.substr(1, 8));
-			root = new node((char)((int)(symb.to_ulong())), 0, nullptr, nullptr,true);	//fix
+			root = new node((char)((int)(symb.to_ulong())), 0, nullptr, nullptr, true);
 			if (code.size() > 8)
 				code = code.substr(9, code.size() - 9);
 			else code = "";
@@ -188,7 +181,7 @@ bool rebuildTree(node*& root, string& code)
 		}
 		else
 		{
-			root = new node(INVALID, 0, nullptr, nullptr,false);	//fix
+			root = new node(INVALID, 0, nullptr, nullptr, false);
 			code = code.substr(1, code.size() - 1);
 			rebuildTree(root->left, code);
 			rebuildTree(root->right, code);
@@ -200,9 +193,9 @@ bool rebuildTree(node*& root, string& code)
 
 void Huffman::encode()
 {
-	// STATE : DOING
 	ifstream input(inputfile, ios::binary);
 	ofstream output(outputfile, ios::binary);
+
 	getSymbolsFromFile();
 	creatHuffmanTree();
 
@@ -225,21 +218,23 @@ void Huffman::encode()
 		output << (char)((int)(character.to_ulong()));
 		Hufftree = Hufftree.substr(8, Hufftree.size() - 8);
 	}
-
-	for (set<char>::iterator index = allSymbol.begin();index!=allSymbol.end();index++)
+	for (int index = 0; index < 256; index++)
 	{
-		if (pathOfallSymbols.count(*index) == 0)
-		{
-			pathOfallSymbols[*index] = "";
-		}
-		pathOfallSymbols[*index] = getPathToLeaf(root, *index, "");
+		if (freq_Symbols[index] != 0)
+			pathOfallSymbols[index] = getPathToLeaf(root, (char)(index - 127), "");
 	}
 
+	// Phần này lâu nhất
 	for (int index = 0; index < content.length(); index++)
 	{
-		string path = pathOfallSymbols[content[index]];
-		allPath.append(path);
+		if (pathOfallSymbols[(int)(content[index]) + 127] != "")
+		{
+			string path = pathOfallSymbols[(int)(content[index]) + 127];
+			allPath.append(path);
+		}
 	}
+
+	// Viết vô file chỉ mất tầm 20s
 	writePathToFile(output, allPath);
 }
 
@@ -266,6 +261,7 @@ void Huffman::decode()
 		bitset<8> character(ctree);
 		treecode += character.to_string();
 	}
+
 	treecode = treecode.substr(0, treecode.size() - nbuffer);
 	node* newTree = new node;
 	rebuildTree(newTree, treecode);
@@ -284,7 +280,6 @@ void Huffman::decode()
 			symbol <<= 1;
 		}
 	}
-
 	string tmp = allPath.substr(allPath.length() - 8, 8);
 
 	char t;
@@ -326,7 +321,6 @@ void Huffman::decode()
 				temp = temp->right;
 		}
 	}
-
 	input.close();
 	output.close();
 }
@@ -337,14 +331,22 @@ void Huffman::deleteTree(node* root)
 	{
 		deleteTree(root->left);
 		deleteTree(root->right);
+		delete root;
 	}
-	delete root;
+}
+
+void Huffman::clear()
+{
+	deleteTree(root);
+	inputfile.clear();
+	outputfile.clear();
+	content.clear();
+	allPath.clear();
+
+	for (int index = 0; index < 256; index++)
+		pathOfallSymbols[index].clear();
 }
 
 Huffman::~Huffman()
 {
-	allSymbol.clear();
-	freq_Symbols.clear();
-	pathOfallSymbols.clear();
-	deleteTree(root);
 }

@@ -10,7 +10,7 @@
 #include <set>
 #include <bitset>
 
-#define INVALID -1
+#define INVALID 0
 
 using namespace std;
 
