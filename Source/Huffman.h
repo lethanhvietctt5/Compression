@@ -40,7 +40,7 @@ class Huffman
 	string inputfile;
 	string outputfile;
 	node* root;
-	string content;
+	//string content;
 	int freq_Symbols[256] = { 0 };
 	string pathOfallSymbols[256] = { "" };
 	string allPath;

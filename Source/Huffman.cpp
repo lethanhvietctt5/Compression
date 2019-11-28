@@ -13,7 +13,7 @@ Huffman::Huffman()
 	root = new node;
 	inputfile = "";
 	outputfile = "";
-	content = "";
+	//content = "";
 	allPath = "";
 }
 
@@ -43,11 +43,20 @@ void Huffman::sortSymbol(vector<node*> &tree)
 void Huffman::getSymbolsFromFile()
 {
 	ifstream input(inputfile, ios::binary);
-	char symb;
-	while (input >> noskipws >> symb)
+	input.seekg(0, ios_base::end);
+	int bufferSize = 1024 * 8, fileSize = input.tellg();
+	input.seekg(0, ios_base::beg);
+	char* symb = new char[bufferSize];
+	while (fileSize != 0)
 	{
-		freq_Symbols[(int)symb + 127]++;
-		content.push_back(symb);
+		bufferSize = (bufferSize > fileSize) ? fileSize : bufferSize;
+		fileSize -= bufferSize;
+		input.read(symb, bufferSize);
+		for (int i = 0; i < bufferSize; i++)
+		{
+			freq_Symbols[(int)symb[i] + 128]++;
+			//content.push_back(symb[i]);
+		}
 	}
 	input.close();
 }
@@ -59,9 +68,8 @@ void Huffman::creatHuffmanTree()
 	{
 		if (freq_Symbols[index] != 0)
 		{
-			char s = (char)(index - 127);
-			int frq = freq_Symbols[index];
-			node* newNode(new node(s, frq, nullptr, nullptr, true));
+			char s = (char)(index - 128);
+			node* newNode(new node(s, freq_Symbols[index], nullptr, nullptr, true));
 			tree.push_back(newNode);
 		}
 	}
@@ -106,20 +114,20 @@ void Huffman::writePathToFile(ofstream& out, string path)
 {
 	int index_string = 0;
 	int count_byte = path.length() / 8;
+	char* symb = new char[count_byte];
 	for (int i = 0; i < count_byte; i++)
 	{
-		char tmp;
-		tmp = tmp & 0x00;
+		symb[i] = symb[i] & 0x00;
 		for (int index = 0; index < 8; index++)
 		{
 			if (path[index_string] == '1')
-				tmp ^= 0x01;
+				symb[i] ^= 0x01;
 			if (index != 7)
-				tmp <<= 1;
+				symb[i] <<= 1;
 			index_string++;
 		}
-		out << tmp;
 	}
+	out.write(symb, count_byte);
 
 	int missing = 0;
 
@@ -221,16 +229,26 @@ void Huffman::encode()
 	for (int index = 0; index < 256; index++)
 	{
 		if (freq_Symbols[index] != 0)
-			pathOfallSymbols[index] = getPathToLeaf(root, (char)(index - 127), "");
+			pathOfallSymbols[index] = getPathToLeaf(root, (char)(index - 128), "");
 	}
 
 	// Phần này lâu nhất
-	for (int index = 0; index < content.length(); index++)
+
+	input.seekg(0, ios_base::end);
+	int bufferSize = 1024 * 8, fileSize = input.tellg();
+	input.seekg(0, ios_base::beg);
+	char* symb = new char[bufferSize];
+	while (fileSize != 0)
 	{
-		if (pathOfallSymbols[(int)(content[index]) + 127] != "")
+		bufferSize = (bufferSize > fileSize) ? fileSize : bufferSize;
+		fileSize -= bufferSize;
+		input.read(symb, bufferSize);
+		for (int i = 0; i < bufferSize; i++)
 		{
-			string path = pathOfallSymbols[(int)(content[index]) + 127];
-			allPath.append(path);
+			if (pathOfallSymbols[(int)symb[i] + 128] != "")
+			{
+				allPath.append(pathOfallSymbols[(int)symb[i] + 128]);
+			}
 		}
 	}
 
@@ -340,7 +358,7 @@ void Huffman::clear()
 	deleteTree(root);
 	inputfile.clear();
 	outputfile.clear();
-	content.clear();
+	//content.clear();
 	allPath.clear();
 
 	for (int index = 0; index < 256; index++)
