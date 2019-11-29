@@ -13,7 +13,6 @@ Huffman::Huffman()
 	root = new node;
 	inputfile = "";
 	outputfile = "";
-	//content = "";
 	allPath = "";
 }
 
@@ -46,17 +45,17 @@ void Huffman::getSymbolsFromFile()
 	input.seekg(0, ios_base::end);
 	int bufferSize = 1024 * 8, fileSize = input.tellg();
 	input.seekg(0, ios_base::beg);
-	char* symb = new char[bufferSize];
 	while (fileSize != 0)
 	{
 		bufferSize = (bufferSize > fileSize) ? fileSize : bufferSize;
+		char* symb = new char[bufferSize];
 		fileSize -= bufferSize;
 		input.read(symb, bufferSize);
 		for (int i = 0; i < bufferSize; i++)
 		{
 			freq_Symbols[(int)symb[i] + 128]++;
-			//content.push_back(symb[i]);
 		}
+		delete[] symb;
 	}
 	input.close();
 }
@@ -232,27 +231,25 @@ void Huffman::encode()
 			pathOfallSymbols[index] = getPathToLeaf(root, (char)(index - 128), "");
 	}
 
-	// Phần này lâu nhất
-
 	input.seekg(0, ios_base::end);
 	int bufferSize = 1024 * 8, fileSize = input.tellg();
 	input.seekg(0, ios_base::beg);
-	char* symb = new char[bufferSize];
 	while (fileSize != 0)
 	{
 		bufferSize = (bufferSize > fileSize) ? fileSize : bufferSize;
+		char* symb = new char[bufferSize];
 		fileSize -= bufferSize;
 		input.read(symb, bufferSize);
 		for (int i = 0; i < bufferSize; i++)
 		{
 			if (pathOfallSymbols[(int)symb[i] + 128] != "")
 			{
-				allPath.append(pathOfallSymbols[(int)symb[i] + 128]);
+				allPath += pathOfallSymbols[(int)symb[i] + 128];
 			}
 		}
+		delete[] symb;
 	}
 
-	// Viết vô file chỉ mất tầm 20s
 	writePathToFile(output, allPath);
 }
 
@@ -285,6 +282,30 @@ void Huffman::decode()
 	rebuildTree(newTree, treecode);
 	redefineTree(newTree);
 
+	/*int here = input.tellg();
+	input.seekg(0, ios_base::end);
+	int bufferSize = 1024 * 8, fileSize = input.tellg();
+	fileSize -= here;
+	input.seekg(here, ios_base::beg);
+	while (fileSize != 0)
+	{
+		bufferSize = (bufferSize > fileSize) ? fileSize : bufferSize;
+		char* symb = new char[bufferSize];
+		fileSize -= bufferSize;
+		input.read(symb, bufferSize);
+		for (int i = 0; i < bufferSize; i++)
+		{
+			for (int index = 0; index < 8; index++)
+			{
+				if ((symb[i] & 0x80) == 0x80)
+					allPath.push_back('1');
+				else
+					allPath.push_back('0');
+				symb[i] <<= 1;
+			}
+		}
+	}*/
+
 	char symbol;
 	symbol &= 0x00;
 	while (input.get(symbol))
@@ -314,7 +335,8 @@ void Huffman::decode()
 
 	for (int i = 0; i < missing + 8; i++)
 		allPath.pop_back();
-
+	int i = 0, bufferSize = 1024 * 8;
+	char* result = new char[bufferSize];
 	node* temp = root;
 	for (int index = 0; index < allPath.length(); index++)
 	{
@@ -322,8 +344,13 @@ void Huffman::decode()
 		{
 			if (temp->left->isLeaf)
 			{
-				output << temp->left->symbol;
+				result[i++] = temp->left->symbol;
 				temp = root;
+				if (i == bufferSize)
+				{
+					output.write(result, i);
+					i = 0;
+				}
 			}
 			else
 				temp = temp->left;
@@ -332,13 +359,20 @@ void Huffman::decode()
 		{
 			if (temp->right->isLeaf)
 			{
-				output << temp->right->symbol;
+				result[i++] = temp->right->symbol;
 				temp = root;
+				if (i == bufferSize)
+				{
+					output.write(result, i);
+					i = 0;
+				}
 			}
 			else
 				temp = temp->right;
 		}
 	}
+	output.write(result, i);
+	delete[] result;
 	input.close();
 	output.close();
 }
