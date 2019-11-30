@@ -242,10 +242,8 @@ void Huffman::encode()
 		input.read(symb, bufferSize);
 		for (int i = 0; i < bufferSize; i++)
 		{
-			if (pathOfallSymbols[(int)symb[i] + 128] != "")
-			{
-				allPath += pathOfallSymbols[(int)symb[i] + 128];
-			}
+			allPath += pathOfallSymbols[(int)symb[i] + 128];
+		
 		}
 		delete[] symb;
 	}
@@ -256,6 +254,64 @@ void Huffman::encode()
 void Huffman::redefineTree(node* newTree)
 {
 	root = newTree;
+}
+
+bool getBit(char byte, int pos)
+{
+	return (byte >> pos) & 0x1;
+}
+
+void decodeBuffer(char* symb, int bufferSize, node* root, node* &temp, int missing, ofstream &output)
+{
+	for (int i = 0; i < bufferSize - 1; i++)
+	{
+		for (int index = 7; index >= 0; index--)
+		{
+			if (getBit(symb[i], index) == 0)
+			{
+				if (temp->left->isLeaf)
+				{
+					output.write(&temp->left->symbol, 1);
+					temp = root;
+				}
+				else
+					temp = temp->left;
+			}
+			else if (getBit(symb[i], index) == 1)
+			{
+				if (temp->right->isLeaf)
+				{
+					output.write(&temp->right->symbol, 1);
+					temp = root;
+				}
+				else
+					temp = temp->right;
+			}
+		}
+	}
+	for (int i = 7; i >= missing; i--)
+	{
+		if (getBit(symb[bufferSize - 1], i) == 0)
+		{
+			if (temp->left->isLeaf)
+			{
+				output.write(&temp->left->symbol, 1);
+				temp = root;
+			}
+			else
+				temp = temp->left;
+		}
+		else if (getBit(symb[bufferSize - 1], i) == 1)
+		{
+			if (temp->right->isLeaf)
+			{
+				output.write(&temp->right->symbol, 1);
+				temp = root;
+			}
+			else
+				temp = temp->right;
+		}
+	}
 }
 
 void Huffman::decode()
@@ -282,31 +338,34 @@ void Huffman::decode()
 	rebuildTree(newTree, treecode);
 	redefineTree(newTree);
 
-	/*int here = input.tellg();
+	int here = input.tellg();
 	input.seekg(0, ios_base::end);
 	int bufferSize = 1024 * 8, fileSize = input.tellg();
 	fileSize -= here;
 	input.seekg(here, ios_base::beg);
+	node* temp = root;
 	while (fileSize != 0)
 	{
-		bufferSize = (bufferSize > fileSize) ? fileSize : bufferSize;
+		int missing = 0;
 		char* symb = new char[bufferSize];
-		fileSize -= bufferSize;
-		input.read(symb, bufferSize);
-		for (int i = 0; i < bufferSize; i++)
+		if (bufferSize > fileSize)
 		{
-			for (int index = 0; index < 8; index++)
-			{
-				if ((symb[i] & 0x80) == 0x80)
-					allPath.push_back('1');
-				else
-					allPath.push_back('0');
-				symb[i] <<= 1;
-			}
+			bufferSize = fileSize;
+			input.read(symb, bufferSize);
+			missing = symb[bufferSize - 1] - '0';
+			bufferSize--;
+			fileSize = 0;
 		}
-	}*/
+		else
+		{
+			input.read(symb, bufferSize);
+			fileSize -= bufferSize;
+		}		
+		decodeBuffer(symb, bufferSize, root, temp, missing, output);
+		delete[] symb;
+	}
 
-	char symbol;
+	/*char symbol;
 	symbol &= 0x00;
 	while (input.get(symbol))
 	{
@@ -319,7 +378,7 @@ void Huffman::decode()
 			symbol <<= 1;
 		}
 	}
-	string tmp = allPath.substr(allPath.length() - 8, 8);
+ 	string tmp = allPath.substr(allPath.length() - 8, 8);
 
 	char t;
 	t = t & 0x00;
@@ -335,7 +394,8 @@ void Huffman::decode()
 
 	for (int i = 0; i < missing + 8; i++)
 		allPath.pop_back();
-	int i = 0, bufferSize = 1024 * 8;
+	int i = 0;
+	bufferSize = 1024 * 8;
 	char* result = new char[bufferSize];
 	node* temp = root;
 	for (int index = 0; index < allPath.length(); index++)
@@ -372,7 +432,7 @@ void Huffman::decode()
 		}
 	}
 	output.write(result, i);
-	delete[] result;
+	delete[] result;*/
 	input.close();
 	output.close();
 }
