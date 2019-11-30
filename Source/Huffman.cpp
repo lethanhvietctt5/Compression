@@ -263,9 +263,9 @@ void Huffman::encode()
 			//allPath += pathOfallSymbols[(int)symb[i] + 128];
 			for (int k = 0; k < pathOfallSymbols[(int)symb[i] + 128].size(); k++)
 			{
-				temp[(curBit / 8)] <<= 1;
+				temp[curBit / 8] <<= 1;
 				if (pathOfallSymbols[(int)symb[i] + 128][k] - '0')
-					temp[(curBit / 8)] ^= 0x01;
+					temp[curBit / 8] ^= 0x01;
 				curBit++;
 				if (curBit / 8 == outBufferSize)
 				{
@@ -277,12 +277,22 @@ void Huffman::encode()
 		}
 		delete[] symb;
 	}
-	if (curBit % 8 != 0)
+	int missing = 0;
+	if (curBit != 0)
 	{
-		temp[(curBit / 8) - 1] <<= curBit % 8;
-		output.write(temp, curBit / 8);
+		if (curBit % 8 != 0)
+		{
+			while (curBit % 8 != 0)
+			{
+				temp[curBit / 8] <<= 1;
+				missing++;
+				curBit++;
+			}
+			output.write(temp, curBit / 8);
+		}
 	}
-	output << (char)(curBit % 8);
+	delete[] temp;
+	output << (char)(missing);
 	//writePathToFile(output, allPath);
 }
 
