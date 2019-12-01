@@ -4,7 +4,6 @@
 #include <bitset>
 #include <vector>
 #include <fstream>
-#include <utility>
 
 using namespace std;
 
@@ -13,7 +12,6 @@ Huffman::Huffman()
 	root = new node;
 	inputfile = "";
 	outputfile = "";
-	allPath = "";
 }
 
 Huffman::Huffman(string in, string out)
@@ -109,51 +107,6 @@ string Huffman::getPathToLeaf(node* crr, char symbol, string path)
 	}
 }
 
-void Huffman::writePathToFile(ofstream& out, string path)
-{
-	int index_string = 0;
-	int count_byte = path.length() / 8;
-	char* symb = new char[count_byte];
-	for (int i = 0; i < count_byte; i++)
-	{
-		symb[i] = symb[i] & 0x00;
-		for (int index = 0; index < 8; index++)
-		{
-			if (path[index_string] == '1')
-				symb[i] ^= 0x01;
-			if (index != 7)
-				symb[i] <<= 1;
-			index_string++;
-		}
-	}
-	out.write(symb, count_byte);
-
-	int missing = 0;
-
-	if ((count_byte * 8) < path.length())
-	{
-		missing = (count_byte + 1) * 8 - path.length();
-		string temp = path.substr(index_string, path.length() - 1);
-		for (int index = 0; index < 8 && temp.length() < 8; index++)
-		{
-			temp.push_back('0');
-		}
-
-		char tmp;
-		tmp = tmp & 0x00;
-		for (int index = 0; index < 8; index++)
-		{
-			if (temp[index] == '1')
-				tmp ^= 0x01;
-			if (index != 7)
-				tmp <<= 1;
-		}
-
-		out << tmp;
-	}
-	out << (char)(missing);
-}
-
 bool restoreTree(node* root, string& result)
 {
 	if (root->isLeaf)
@@ -231,22 +184,6 @@ void Huffman::encode()
 			pathOfallSymbols[index] = getPathToLeaf(root, (char)(index - 128), "");
 	}
 
-	/*input.seekg(0, ios_base::end);
-	int bufferSize = 1024 * 8, fileSize = input.tellg();
-	input.seekg(0, ios_base::beg);
-	while (fileSize != 0)
-	{
-		bufferSize = (bufferSize > fileSize) ? fileSize : bufferSize;
-		char* symb = new char[bufferSize];
-		fileSize -= bufferSize;
-		input.read(symb, bufferSize);
-		for (int i = 0; i < bufferSize; i++)
-		{
-			allPath += pathOfallSymbols[(int)symb[i] + 128];
-		}
-		delete[] symb;
-	}*/
-
 	input.seekg(0, ios_base::end);
 	int bufferSize = 1024 * 8, outBufferSize = 1024 * 8, fileSize = input.tellg();
 	input.seekg(0, ios_base::beg);
@@ -260,7 +197,6 @@ void Huffman::encode()
 		input.read(symb, bufferSize);
 		for (int i = 0; i < bufferSize; i++)
 		{
-			//allPath += pathOfallSymbols[(int)symb[i] + 128];
 			for (int k = 0; k < pathOfallSymbols[(int)symb[i] + 128].size(); k++)
 			{
 				temp[curBit / 8] <<= 1;
@@ -293,7 +229,6 @@ void Huffman::encode()
 	}
 	delete[] temp;
 	output << (char)(missing);
-	//writePathToFile(output, allPath);
 }
 
 void Huffman::redefineTree(node* newTree)
@@ -428,7 +363,6 @@ void Huffman::clear()
 	deleteTree(root);
 	inputfile.clear();
 	outputfile.clear();
-	allPath.clear();
 
 	for (int index = 0; index < 256; index++)
 		pathOfallSymbols[index].clear();

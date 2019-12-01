@@ -42,7 +42,6 @@ class Huffman
 	node* root;
 	int freq_Symbols[256] = { 0 };
 	string pathOfallSymbols[256] = { "" };
-	string allPath;
 public:
 	Huffman();
 	Huffman(string in, string out);
@@ -51,7 +50,6 @@ public:
 	void getSymbolsFromFile();
 	void creatHuffmanTree();
 	string getPathToLeaf(node* crr, char symbol, string path);
-	void writePathToFile(ofstream& out, string path);
 	void encode();
 
 	// Decode
