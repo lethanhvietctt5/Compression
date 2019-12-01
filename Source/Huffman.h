@@ -51,7 +51,6 @@ public:
 	void getSymbolsFromFile();
 	void creatHuffmanTree();
 	string getPathToLeaf(node* crr, char symbol, string path);
-	void writePathToFile(ofstream& out, string path);
 	void encodeAFileinFolder(ostream& output);
 	void encode();
 
