@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <bitset>
 
 #define INVALID 0
 
@@ -42,7 +43,6 @@ class Huffman
 	node* root;
 	int freq_Symbols[256] = { 0 };
 	string pathOfallSymbols[256] = { "" };
-	string allPath;
 public:
 	Huffman();
 	Huffman(string in, string out);
@@ -52,12 +52,19 @@ public:
 	void creatHuffmanTree();
 	string getPathToLeaf(node* crr, char symbol, string path);
 	void writePathToFile(ofstream& out, string path);
+	void encodeAFileinFolder(ostream& output);
 	void encode();
 
 	// Decode
 	void redefineTree(node* newTree);
+	void decodeFolder(string outfolder);
 	void decode();
 	void deleteTree(node* root);
 	void clear();
 	~Huffman();
 };
+
+void decodeBuffer(char* symb, int bufferSize, node* root, node*& temp, int missing, ofstream& output);
+bool getBit(char byte, int pos);
+bool rebuildTree(node*& root, string& code);
+bool restoreTree(node* root, string& result);
