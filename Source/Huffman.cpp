@@ -192,51 +192,6 @@ string Huffman::getPathToLeaf(node* crr, char symbol, string path)
 	}
 }
 
-void Huffman::writePathToFile(ofstream& out, string path)
-{
-	int index_string = 0;
-	int count_byte = path.length() / 8;
-	char* symb = new char[count_byte];
-	for (int i = 0; i < count_byte; i++)
-	{
-		symb[i] = symb[i] & 0x00;
-		for (int index = 0; index < 8; index++)
-		{
-			if (path[index_string] == '1')
-				symb[i] ^= 0x01;
-			if (index != 7)
-				symb[i] <<= 1;
-			index_string++;
-		}
-	}
-	out.write(symb, count_byte);
-
-	int missing = 0;
-
-	if ((count_byte * 8) < path.length())
-	{
-		missing = (count_byte + 1) * 8 - path.length();
-		string temp = path.substr(index_string, path.length() - 1);
-		for (int index = 0; index < 8 && temp.length() < 8; index++)
-		{
-			temp.push_back('0');
-		}
-
-		char tmp;
-		tmp = tmp & 0x00;
-		for (int index = 0; index < 8; index++)
-		{
-			if (temp[index] == '1')
-				tmp ^= 0x01;
-			if (index != 7)
-				tmp <<= 1;
-		}
-
-		out << tmp;
-	}
-	out << (char)(missing);
-}
-
 bool restoreTree(node* root, string& result)
 {
 	if (root->isLeaf)
