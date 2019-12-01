@@ -18,9 +18,10 @@ Huffman::Huffman(string in, string out)
 
 void Huffman::encodeAFileinFolder(ostream& output)
 {
+	string newName = inputfile;
+	inputfile = inputfile.substr(1, inputfile.size() - 1);
 	ifstream input(inputfile, ios::binary);
-	output << inputfile.size() << " " << inputfile << " ";
-	outputfile = "";
+	output << newName.size() << " " << newName << " ";
 
 	getSymbolsFromFile();
 	creatHuffmanTree();
@@ -335,58 +336,69 @@ void Huffman::decodeFolder(string outfolder)
 		{
 			input >> filename[k];
 		}
-		filename = outfolder + '\\' + filename;
-		ofstream output(filename, ios::binary);
-		if (output.fail())
+		if (filename[0] == '0')
 		{
-			string cmd = "mkdir " + filename.substr(0, filename.rfind('\\'));
-			system(cmd.c_str());
-			output.open(filename, ios::binary);
-		}
-		input >> noskipws >> symb;
-		string treecode = "", allPath = "";
-		int fileSize, nChar, nbuffer;
-		char ctree;
-		input >> nChar;
-		input >> noskipws >> ctree;
-		input >> nbuffer;
-		input >> noskipws >> ctree;
-		for (int i = 0; i < nChar; i++)
-		{
+			filename = filename.substr(1, filename.size() - 1);
+			filename = outfolder + '\\' + filename;
+			ofstream output(filename, ios::binary);
+			if (output.fail())
+			{
+				string cmd = "mkdir " + filename.substr(0, filename.rfind('\\'));
+				system(cmd.c_str());
+				output.open(filename, ios::binary);
+			}
+			input >> noskipws >> symb;
+			string treecode = "", allPath = "";
+			int fileSize, nChar, nbuffer;
+			char ctree;
+			input >> nChar;
 			input >> noskipws >> ctree;
-			bitset<8> character(ctree);
-			treecode += character.to_string();
-		}
-		treecode = treecode.substr(0, treecode.size() - nbuffer);
-		rebuildTree(root, treecode);
-		input >> noskipws >> symb;
-		input >> fileSize;
-		input >> noskipws >> symb;
-		
-		int bufferSize = 1024 * 8;
-		node* temp = root;
-		while (fileSize != 0)
-		{
-			int missing = 0;
-			char* symb = new char[bufferSize];
-			if (bufferSize > fileSize)
+			input >> nbuffer;
+			input >> noskipws >> ctree;
+			for (int i = 0; i < nChar; i++)
 			{
-				bufferSize = fileSize;
-				input.read(symb, bufferSize);
-				missing = (int)symb[bufferSize - 1];
-				bufferSize--;
-				fileSize = 0;
+				input >> noskipws >> ctree;
+				bitset<8> character(ctree);
+				treecode += character.to_string();
 			}
-			else
-			{
-				input.read(symb, bufferSize);
-				fileSize -= bufferSize;
-			}
-			decodeBuffer(symb, bufferSize, root, temp, missing, output);
-			delete[] symb;
-		}
-		output.close();
+			treecode = treecode.substr(0, treecode.size() - nbuffer);
+			rebuildTree(root, treecode);
+			input >> noskipws >> symb;
+			input >> fileSize;
+			input >> noskipws >> symb;
 
+			int bufferSize = 1024 * 8;
+			node* temp = root;
+			while (fileSize != 0)
+			{
+				int missing = 0;
+				char* symb = new char[bufferSize];
+				if (bufferSize > fileSize)
+				{
+					bufferSize = fileSize;
+					input.read(symb, bufferSize);
+					missing = (int)symb[bufferSize - 1];
+					bufferSize--;
+					fileSize = 0;
+				}
+				else
+				{
+					input.read(symb, bufferSize);
+					fileSize -= bufferSize;
+				}
+				decodeBuffer(symb, bufferSize, root, temp, missing, output);
+				delete[] symb;
+			}
+			output.close();
+		}
+		else if (filename[0] == '1')
+		{
+			filename = filename.substr(1, filename.size() - 1);
+			filename = outfolder + '\\' + filename;
+			string cmd = "mkdir " + filename;
+			system(cmd.c_str());
+			input >> noskipws >> symb;
+		}
 	}
 	input.close();
 }
