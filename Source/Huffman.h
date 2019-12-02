@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <iostream>
 #include <string>
@@ -12,11 +12,11 @@ using namespace std;
 
 struct node
 {
-	char symbol;
-	int freq;
-	node* left;
-	node* right;
-	bool isLeaf;
+	char symbol;	//ký tự
+	int freq;		//tần số xuất hiện của ký tự trong dữ liệu
+	node* left;		// node trái
+	node* right;	// node phải
+	bool isLeaf;	// kiểm tra node lá
 
 	node()
 	{
@@ -38,28 +38,28 @@ struct node
 };
 class Huffman
 {
-	string inputfile;
-	string outputfile;
-	node* root;
-	int freq_Symbols[256] = { 0 };
-	string pathOfallSymbols[256] = { "" };
+	string inputfile;	// tên file input
+	string outputfile;	// tên file output
+	node* root;			// node gốc của cây Huffman
+	int freq_Symbols[256] = { 0 };	// bảng tần số các ký tự
+	string pathOfallSymbols[256] = { "" };	// bảng mã hóa ký tự thành chuỗi bit
 public:
 	Huffman();
 	Huffman(string in, string out);
 	// Encode
-	void sortSymbol(vector<node*> &tree);
-	void getSymbolsFromFile();
-	void creatHuffmanTree();
-	string getPathToLeaf(node* crr, char symbol, string path);
+	void sortSymbol(vector<node*> &tree);	// sort các node theo tần số tăng dần
+	void getSymbolsFromFile();				// lấy các ký tự khác nhau xuất hiện trong dữ liệu
+	void creatHuffmanTree();				// tạo cây Huffman
+	string getPathToLeaf(node* crr, char symbol, string path);		// Lấy chuỗi bit mã hóa cho các ký tự ở node lá
 	void encodeAFileinFolder(ostream& output);
-	void encode();
+	void encode();		// Nén dữ liệu
 
 	// Decode
 	void redefineTree(node* newTree);
 	void decodeFolder(string outfolder);
-	void decode();
-	void deleteTree(node* root);
-	void clear();
+	void decode();		// Giải nén dữ liệu đã nén
+	void deleteTree(node* root);	// Delete cây Huffman
+	void clear();		// giải phóng bộ nhớ
 	~Huffman();
 };
 

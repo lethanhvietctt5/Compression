@@ -106,10 +106,12 @@ void Huffman::encodeAFileinFolder(ostream& output)
 
 void Huffman::sortSymbol(vector<node*> &tree)
 {
+	//TODO: Sắp xếp các node chứa các ký tự theo tần số tăng dần
 	for (int index = 0; index < tree.size(); index++)
 	{
 		for (int index_2 = index + 1; index_2 < tree.size(); index_2++)
 		{
+			// Hai ký tự có tần suất khác nhau hoặc nếu bằng nhau thì so sánh thứ tự trong bảng mã ascii
 			if ((tree[index]->freq > tree[index_2]->freq) || (tree[index]->freq == tree[index_2]->freq && tree[index]->symbol >tree[index_2]->symbol))
 			{
 				node* tmp = tree[index];
@@ -122,22 +124,20 @@ void Huffman::sortSymbol(vector<node*> &tree)
 
 void Huffman::getSymbolsFromFile()
 {
+	//TODO: Lấy các ký tự khác nhau xuất hiện trong dữ liệu
 	ifstream input(inputfile, ios::binary);
 	input.seekg(0, ios_base::end);
-	int bufferSize = 1024 * 8, fileSize = input.tellg();
+	int bufferSize = 1024 * 8, fileSize = input.tellg();	// Lấy chiều dài nội dung của dữ liệu
 	input.seekg(0, ios_base::beg);
-	int count = 0;
 	while (fileSize != 0)
 	{
+		// đọc bufferSize ký tự từ file và tăng tần số cho các ký tự
 		bufferSize = (bufferSize > fileSize) ? fileSize : bufferSize;
 		char* symb = new char[bufferSize];
 		fileSize -= bufferSize;
 		input.read(symb, bufferSize);
 		for (int i = 0; i < bufferSize; i++)
-		{
-			count++;
 			freq_Symbols[(int)symb[i] + 128]++;
-		}
 		delete[] symb;
 	}
 	input.close();
@@ -145,7 +145,11 @@ void Huffman::getSymbolsFromFile()
 
 void Huffman::creatHuffmanTree()
 {
+	//TODO: tạo cây Huffman
+
 	vector<node*> tree;
+	
+	//Tạo các node chứa các ký tự
 	for (int index = 0; index < 256; index++)
 	{
 		if (freq_Symbols[index] != 0)
@@ -156,10 +160,12 @@ void Huffman::creatHuffmanTree()
 		}
 	}
 
-	sortSymbol(tree);
+	sortSymbol(tree);	// sắp xếp theo tần số tăng dần
 
 	while (tree.size() > 1)
 	{
+		// Lấy hai node có tần số nhỏ nhất gộp thành một, xóa bỏ hai node đó và thêm node mới vào tree
+		// Lặp lại cho đến khi tree chỉ còn 1 node duy nhất
 		node* first = tree.front();
 		tree.erase(tree.begin());
 
@@ -175,10 +181,12 @@ void Huffman::creatHuffmanTree()
 
 string Huffman::getPathToLeaf(node* crr, char symbol, string path)
 {
+	//TODO: Lấy chuỗi bit mã hóa cho các ký tự ở node lá
 	if (crr == nullptr)
 		return "";
 	else
 	{
+		// Đến node lá thì return chuỗi bit
 		if (crr->symbol == symbol && crr->isLeaf)
 			return path;
 		else
@@ -238,33 +246,38 @@ bool rebuildTree(node*& root, string& code)
 
 void Huffman::encode()
 {
+	//TODO: Nén dữ liệu
+
+	// Mở file input và output
 	ifstream input(inputfile, ios::binary);
 	ofstream output(outputfile, ios::binary);
 
-	getSymbolsFromFile();
-	creatHuffmanTree();
+	getSymbolsFromFile();	// Lấy ký tự và tạo bảng tần số
+	creatHuffmanTree();		// Tạo cây Huffman từ bảng tần số
 
 	int nChar, buffer = 0;
 	string Hufftree = "";
-	restoreTree(root, Hufftree);
+	restoreTree(root, Hufftree);	// Lưu trữ thông tin cây Huffman để giải nén
 	while (Hufftree.size() % 8)
 	{
 		Hufftree += '0';
 		buffer++;
 	}
 	nChar = Hufftree.size() / 8;
-	output << nChar;
+	output << nChar;	// Lưu trữ số ký tự
 	output << ' ';
-	output << buffer;
+	output << buffer;	// Lưu trữ số mã bit bị thiếu 
 	output << ' ';
 	while (Hufftree.size() != 0)
 	{
+		// Quy đổi chuỗi bit thông tin cây Huffman thành các ký tự để lưu trữ vào file nén
 		bitset<8> character(Hufftree.substr(0, 8));
 		output << (char)((int)(character.to_ulong()));
 		Hufftree = Hufftree.substr(8, Hufftree.size() - 8);
 	}
 	for (int index = 0; index < 256; index++)
 	{
+		// Lấy chuỗi bit mã hóa của các ký tự
 		if (freq_Symbols[index] != 0)
 			pathOfallSymbols[index] = getPathToLeaf(root, (char)(index - 128), "");
 	}
