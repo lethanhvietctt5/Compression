@@ -36,6 +36,7 @@ struct node
 		isLeaf = il;
 	}
 };
+
 class Huffman
 {
 	string inputfile;	// tên file input
