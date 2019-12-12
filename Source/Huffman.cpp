@@ -16,6 +16,21 @@ Huffman::Huffman(string in, string out)
 	outputfile = out;
 }
 
+void fixWhiteSpace(std::string &path)
+{
+	path.insert(path.begin(), '\"');
+	for (int i = 0; i < path.size(); i++)
+	{
+		if (path[i] == '\\')
+		{
+			path.insert(path.begin() + i, '\"');
+			path.insert(path.begin() + i + 2, '\"');
+			i++;
+		}
+	}
+	path += '\"';
+}
+
 void Huffman::encodeAFileinFolder(ostream& output)
 {	// hàm nén một file con vào 1 tập tin nén folder
 	string newName = inputfile;
@@ -126,6 +141,7 @@ void Huffman::getSymbolsFromFile()
 {
 	//TODO: Lấy các ký tự khác nhau xuất hiện trong dữ liệu
 	ifstream input(inputfile, ios::binary);
+
 	input.seekg(0, ios_base::end);
 	int bufferSize = 1024 * 8, fileSize = input.tellg();	// Lấy chiều dài nội dung của dữ liệu
 	input.seekg(0, ios_base::beg);
@@ -357,7 +373,9 @@ void Huffman::decodeFolder(string outfolder)
 			ofstream output(filename, ios::binary);
 			if (output.fail())
 			{   // nếu đọc file thất bại thì ta tạo 1 đường dẫn đến file bằng đường dẫn đã đọc vào sau đó tạo file để bắt đầu giải nén
-				string cmd = "mkdir " + filename.substr(0, filename.rfind('\\'));
+				string temp = filename.substr(0, filename.rfind('\\'));
+				fixWhiteSpace(temp);
+				string cmd = "mkdir " + temp;
 				system(cmd.c_str());
 				output.open(filename, ios::binary);
 			}
@@ -409,6 +427,7 @@ void Huffman::decodeFolder(string outfolder)
 		{
 			filename = filename.substr(1, filename.size() - 1);
 			filename = outfolder + '\\' + filename;
+			fixWhiteSpace(filename);
 			string cmd = "mkdir " + filename;
 			system(cmd.c_str());
 			input >> noskipws >> symb;
