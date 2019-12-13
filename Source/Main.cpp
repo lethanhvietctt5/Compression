@@ -115,6 +115,7 @@ void decompressFolder()
 	fol.decode(in, out);
 	cout << yellow << "Decomression successful !";
 }
+
 int main()
 {
 	HWND console = GetConsoleWindow();
