@@ -176,6 +176,13 @@ void Huffman::creatHuffmanTree()
 		}
 	}
 
+	if (tree.size() == 1)
+	{
+		node* first = tree.front();
+		root = new node(INVALID, first->freq + first->freq, first, first, false);
+		tree.erase(tree.begin());
+	}
+
 	sortSymbol(tree);	// sắp xếp theo tần số tăng dần
 
 	while (tree.size() > 1)
