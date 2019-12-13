@@ -67,7 +67,7 @@ void compressFile()
 	getline(cin, out);
 	Huffman huff(in, out);
 	huff.encode();
-	cout << yellow << "Comression successful !";
+	cout << yellow << "Compression successful !";
 }
 
 void decompressFile()
@@ -82,7 +82,7 @@ void decompressFile()
 	getline(cin, out);
 	Huffman huff(in, out);
 	huff.decode();
-	cout << yellow << "Decomression successful !";
+	cout << yellow << "Decompression successful !";
 }
 
 void compressFolder()
@@ -98,7 +98,7 @@ void compressFolder()
 	Folder fol(in);
 	fol.open();
 	fol.encode(out);
-	cout << yellow << "comression successful !";
+	cout << yellow << "Compression successful !";
 }
 
 void decompressFolder()
@@ -113,8 +113,9 @@ void decompressFolder()
 	getline(cin, out);
 	Folder fol;
 	fol.decode(in, out);
-	cout << yellow << "Decomression successful !";
+	cout << yellow << "Decompression successful !";
 }
+
 int main()
 {
 	HWND console = GetConsoleWindow();
